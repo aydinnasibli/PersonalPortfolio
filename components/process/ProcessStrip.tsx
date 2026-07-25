@@ -9,10 +9,7 @@ const STEPS = [
 
 export default function ProcessStrip() {
   return (
-    <section
-      data-section-index="03"
-      style={{ padding: '60px 0 100px', position: 'relative', overflow: 'hidden' }}
-    >
+    <section data-section-index="03" className="section">
       <ParallaxWord text="rhythm." top="14%" anchor="left" speed={0.34} />
 
       <div className="container" style={{ position: 'relative', zIndex: 2 }}>
@@ -24,44 +21,25 @@ export default function ProcessStrip() {
         </div>
         <h2
           className="h-display rv"
-          style={{ fontSize: 'clamp(40px, 5vw, 80px)', margin: '20px 0 64px', lineHeight: 0.95 }}
+          style={{ fontSize: 'clamp(34px, 5vw, 80px)', margin: '20px 0 56px', lineHeight: 0.95 }}
         >
           A&nbsp;<span className="h-serif" style={{ fontStyle: 'italic' }}>quiet</span>
           &nbsp;four-step rhythm.
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
-          {STEPS.map((it, i) => (
-            <div
-              key={it.n}
-              className="rv"
-              style={{
-                padding: '32px 28px 0 0',
-                borderRight: i === STEPS.length - 1 ? 'none' : '1px solid var(--line)',
-                paddingLeft: i === 0 ? 0 : 28,
-                borderTop: '1px solid var(--line)',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 11,
-                  letterSpacing: '.18em',
-                  color: 'var(--muted)',
-                }}
-              >
+        <ol className="process-grid" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {STEPS.map((it) => (
+            <li key={it.n} className="rv process-step">
+              <div className="label-mono" style={{ letterSpacing: '.18em' }}>
                 —{it.n}
               </div>
-              <div
-                className="h-serif"
-                style={{ fontSize: 32, margin: '10px 0 10px', letterSpacing: '-0.01em' }}
-              >
-                {it.t}
-              </div>
-              <div style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--ink-2)' }}>{it.d}</div>
-            </div>
+              <h3 className="h-serif process-title">{it.t}</h3>
+              <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--ink-2)', margin: 0 }}>
+                {it.d}
+              </p>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   )

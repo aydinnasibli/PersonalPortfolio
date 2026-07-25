@@ -7,37 +7,47 @@ interface MagneticProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
 }
 
+/** Pulls its child toward the pointer. Pure decoration — skipped on touch
+ *  devices and when reduced motion is requested. */
 export default function Magnetic({ strength = 0.3, children, style, ...rest }: MagneticProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    let raf: number
+    if (
+      !window.matchMedia('(pointer: fine)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return
+    }
+
+    let raf = 0
 
     const move = (e: MouseEvent) => {
       const r = el.getBoundingClientRect()
-      const cx = r.left + r.width / 2
-      const cy = r.top + r.height / 2
-      const dx = (e.clientX - cx) * strength
-      const dy = (e.clientY - cy) * strength
-      cancelAnimationFrame(raf)
+      const dx = (e.clientX - (r.left + r.width / 2)) * strength
+      const dy = (e.clientY - (r.top + r.height / 2)) * strength
+      if (raf) cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => {
+        raf = 0
         el.style.transform = `translate(${dx}px, ${dy}px)`
       })
     }
 
     const leave = () => {
-      cancelAnimationFrame(raf)
+      if (raf) cancelAnimationFrame(raf)
+      raf = 0
       el.style.transform = 'translate(0,0)'
     }
 
     el.addEventListener('mousemove', move)
     el.addEventListener('mouseleave', leave)
+
     return () => {
       el.removeEventListener('mousemove', move)
       el.removeEventListener('mouseleave', leave)
-      cancelAnimationFrame(raf)
+      if (raf) cancelAnimationFrame(raf)
     }
   }, [strength])
 
@@ -46,8 +56,8 @@ export default function Magnetic({ strength = 0.3, children, style, ...rest }: M
       ref={ref}
       style={{
         display: 'inline-block',
+        maxWidth: '100%',
         transition: 'transform .5s cubic-bezier(.2,.7,.2,1)',
-        willChange: 'transform',
         ...style,
       }}
       {...rest}

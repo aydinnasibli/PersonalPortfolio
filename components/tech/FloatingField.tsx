@@ -17,6 +17,10 @@ function FloatingChip({
   useEffect(() => {
     const el = elRef.current
     if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    // Randomised in an effect rather than during render, so the server and
+    // client markup agree.
     const dur = 8 + Math.random() * 6
     const delay = -Math.random() * dur
     el.style.animation = `floatY ${dur}s ease-in-out ${delay}s infinite`
@@ -51,24 +55,16 @@ function FloatingChip({
   )
 }
 
+/**
+ * Decorative scatter of the stack. aria-hidden — TechStack renders the same
+ * list as real text alongside it, which is what assistive tech reads.
+ */
 export default function FloatingField() {
   const [hover, setHover] = useState<StackItem | null>(null)
 
   return (
-    <div
-      className="rv"
-      style={{
-        position: 'relative',
-        height: 520,
-        borderRadius: 24,
-        border: '1px solid var(--line)',
-        background: 'linear-gradient(160deg, var(--paper) 0%, var(--bg) 100%)',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Faint grid */}
+    <div className="rv tech-field" aria-hidden="true">
       <div
-        aria-hidden
         style={{
           position: 'absolute',
           inset: 0,
@@ -80,37 +76,14 @@ export default function FloatingField() {
         }}
       />
 
-      {/* Centre label */}
-      <div
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: 'translate(-50%,-50%)',
-          textAlign: 'center',
-        }}
-      >
-        <div className="h-serif" style={{ fontSize: 34, color: 'var(--ink-2)' }}>
-          a small set,
-        </div>
-        <div className="h-serif" style={{ fontSize: 34, color: 'var(--ink-2)' }}>
-          deeply known.
-        </div>
-        <div
-          style={{
-            marginTop: 12,
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            letterSpacing: '.18em',
-            textTransform: 'uppercase',
-            color: 'var(--muted)',
-          }}
-        >
+      <div className="tech-centre">
+        <div className="h-serif tech-centre-line">a small set,</div>
+        <div className="h-serif tech-centre-line">deeply known.</div>
+        <div className="label-mono" style={{ marginTop: 12, letterSpacing: '.18em' }}>
           {hover ? hover.note : 'Hover any tool'}
         </div>
       </div>
 
-      {/* Chips */}
       {STACK.map((t) => (
         <FloatingChip key={t.name} item={t} onHover={setHover} />
       ))}

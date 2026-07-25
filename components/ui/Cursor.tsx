@@ -2,6 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+/**
+ * Custom pointer. Activation is a CSS concern, not a React one: the elements
+ * always render hidden, and adding `cursor-ready` to <html> reveals them and
+ * hides the system cursor. That keeps the effect free of setState (which would
+ * cascade a render) and means a failure to mount simply leaves the normal
+ * cursor in place.
+ */
 export default function Cursor() {
   const ringRef = useRef<HTMLDivElement>(null)
   const dotRef = useRef<HTMLDivElement>(null)
@@ -9,6 +16,19 @@ export default function Cursor() {
   const stateRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 })
 
   useEffect(() => {
+    // Only take over the pointer where there is one, and only when motion is
+    // welcome. Previously the rAF loop also ran on phones, animating an
+    // element the stylesheet had already set to display:none.
+    if (
+      !window.matchMedia('(pointer: fine)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return
+    }
+
+    const root = document.documentElement
+    root.classList.add('cursor-ready')
+
     const onMove = (e: MouseEvent) => {
       stateRef.current.tx = e.clientX
       stateRef.current.ty = e.clientY
@@ -17,7 +37,7 @@ export default function Cursor() {
       }
     }
 
-    let raf: number
+    let raf = 0
     const tick = () => {
       const s = stateRef.current
       s.x += (s.tx - s.x) * 0.18
@@ -27,8 +47,19 @@ export default function Cursor() {
       }
       raf = requestAnimationFrame(tick)
     }
-    tick()
-    window.addEventListener('mousemove', onMove)
+
+    const start = () => {
+      if (!raf) raf = requestAnimationFrame(tick)
+    }
+    const stop = () => {
+      if (raf) {
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
+    }
+
+    // No point animating a cursor in a background tab.
+    const onVisibility = () => (document.hidden ? stop() : start())
 
     const checkHover = (e: MouseEvent) => {
       const t = e.target
@@ -36,8 +67,7 @@ export default function Cursor() {
       const view = t.closest("[data-cursor='view']")
       const hover = t.closest("[data-cursor='hover'], a, button, .chip")
       if (view) {
-        const lbl = view.getAttribute('data-cursor-label') || 'View'
-        setLabel(lbl)
+        setLabel(view.getAttribute('data-cursor-label') || 'View')
         ringRef.current?.classList.add('is-view')
         ringRef.current?.classList.remove('is-hover')
       } else if (hover) {
@@ -49,19 +79,25 @@ export default function Cursor() {
         setLabel('')
       }
     }
+
+    start()
+    window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseover', checkHover)
     window.addEventListener('mouseout', checkHover)
+    document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
-      cancelAnimationFrame(raf)
+      stop()
+      root.classList.remove('cursor-ready')
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseover', checkHover)
       window.removeEventListener('mouseout', checkHover)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
   return (
-    <>
+    <div aria-hidden="true">
       <div ref={ringRef} className="cursor">
         <div
           style={{
@@ -76,6 +112,6 @@ export default function Cursor() {
         </div>
       </div>
       <div ref={dotRef} className="cursor-dot" />
-    </>
+    </div>
   )
 }

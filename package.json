@@ -2,14 +2,20 @@
   "name": "personal-portfolio",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
-    "next": "^16.2.6",
+    "next": "^16.2.11",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
@@ -18,8 +24,8 @@
     "@types/node": "^25.9.1",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^10.4.0",
-    "eslint-config-next": "^16.2.6",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.11",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3"

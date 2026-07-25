@@ -11,6 +11,7 @@ interface ParallaxWordProps {
   anchor?: 'left' | 'right'
 }
 
+/** Oversized watermark word that drifts as its section crosses the viewport. */
 export default function ParallaxWord({
   text,
   top = '30%',
@@ -24,30 +25,35 @@ export default function ParallaxWord({
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const section = el.closest('section')
-    if (!section) return
-    let raf: number
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-    const onScroll = () => {
+    const section = el.closest('section, footer')
+    if (!section) return
+
+    let raf = 0
+
+    const update = () => {
+      raf = 0
       const r = section.getBoundingClientRect()
       const vh = window.innerHeight
       const total = vh + r.height
-      const passed = vh - r.top
-      const p = Math.max(-1, Math.min(2, passed / total))
-      const offsetY = (p - 0.5) * vh * speed
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        if (el) el.style.transform = `translate3d(0, ${-offsetY}px, 0)`
-      })
+      if (total <= 0) return
+      const p = Math.max(-1, Math.min(2, (vh - r.top) / total))
+      el.style.transform = `translate3d(0, ${-((p - 0.5) * vh * speed)}px, 0)`
     }
 
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    }
+
+    update()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      cancelAnimationFrame(raf)
+      if (raf) cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
     }
   }, [speed])
 
@@ -57,7 +63,7 @@ export default function ParallaxWord({
       : { left: left || '-2vw', right: 'auto', textAlign: 'left' as const }
 
   return (
-    <div ref={ref} className="pxword" style={{ top, ...sideStyle }}>
+    <div ref={ref} className="pxword" aria-hidden="true" style={{ top, ...sideStyle }}>
       {text}
     </div>
   )

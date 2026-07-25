@@ -1,5 +1,6 @@
 import ParallaxWord from '@/components/ui/ParallaxWord'
 import FloatingField from './FloatingField'
+import { STACK } from '@/lib/data'
 
 const CATEGORIES = [
   { k: 'Frontend', v: 'Next.js · React · TypeScript · Tailwind · shadcn/ui · Framer Motion' },
@@ -10,23 +11,11 @@ const CATEGORIES = [
 
 export default function TechStack() {
   return (
-    <section
-      id="stack"
-      data-section-index="02"
-      style={{ position: 'relative', padding: '60px 0 100px', overflow: 'hidden' }}
-    >
+    <section id="stack" data-section-index="02" className="section">
       <ParallaxWord text="tools." top="12%" anchor="right" speed={0.3} />
 
       <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 64,
-            alignItems: 'end',
-            marginBottom: 64,
-          }}
-        >
+        <div className="section-head">
           <div>
             <div className="section-index rv">
               <span className="rule" />
@@ -34,10 +23,7 @@ export default function TechStack() {
                 Index / <b>02</b> — Tools
               </span>
             </div>
-            <h2
-              className="h-display rv"
-              style={{ fontSize: 'clamp(48px, 7vw, 112px)', margin: '20px 0 0', lineHeight: 0.92 }}
-            >
+            <h2 className="h-display rv section-title">
               Tools I trust
               <br />
               <span className="h-serif" style={{ fontStyle: 'italic' }}>
@@ -45,17 +31,7 @@ export default function TechStack() {
               </span>
             </h2>
           </div>
-          <p
-            className="rv"
-            style={{
-              maxWidth: 480,
-              fontSize: 17,
-              lineHeight: 1.55,
-              color: 'var(--ink-2)',
-              margin: 0,
-              justifySelf: 'end',
-            }}
-          >
+          <p className="rv section-lede">
             I work in a single stack on purpose — the depth pays off. These are the libraries and
             runtimes I reach for first, and the ones I&apos;d defend in a long meeting.
           </p>
@@ -63,29 +39,21 @@ export default function TechStack() {
 
         <FloatingField />
 
-        <div
-          className="rv"
-          style={{
-            marginTop: 80,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 24,
-            borderTop: '1px solid var(--line)',
-            paddingTop: 28,
-          }}
-        >
+        {/* Below 900px the floating field becomes an unreadable pile of
+            overlapping pills, so it is swapped for a plain list. */}
+        <ul className="tech-list rv" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {STACK.map((t) => (
+            <li key={t.name} className="chip">
+              <span className="glyph" />
+              {t.name}
+            </li>
+          ))}
+        </ul>
+
+        <div className="rv tech-categories">
           {CATEGORIES.map((c) => (
             <div key={c.k}>
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 11,
-                  letterSpacing: '.16em',
-                  textTransform: 'uppercase',
-                  color: 'var(--muted)',
-                  marginBottom: 8,
-                }}
-              >
+              <div className="label-mono" style={{ marginBottom: 8 }}>
                 {c.k}
               </div>
               <div style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.55 }}>{c.v}</div>
